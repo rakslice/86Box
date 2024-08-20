@@ -22,6 +22,7 @@
 #include <QProcess>
 #include <QApplication>
 #include <QAbstractNativeEventFilter>
+#include <QScreen>
 
 #include "qt_mainwindow.hpp"
 extern MainWindow *main_window;
@@ -108,6 +109,22 @@ xinput2_get_xtest_pointer()
     return -1;
 }
 
+void warpToWindow() {
+    XWindowAttributes winattrib {};
+    if (XGetWindowAttributes(disp, main_window->winId(), &winattrib)) {
+        auto globalPoint = main_window->mapToGlobal(QPoint(main_window->width() / 2, main_window->height() / 2));
+
+        /* Fix the offset within the screen component of the global coordinates from mapToGlobal()
+        not already being scaled by the pixel ratio */
+        auto globalPosOfScreen = main_window->screen()->geometry().topLeft();
+        globalPoint = globalPosOfScreen + (globalPoint - globalPosOfScreen) * main_window->devicePixelRatio();
+
+        int screenNum = XScreenNumberOfScreen(winattrib.screen);
+        XWarpPointer(disp, XRootWindow(disp, screenNum), XRootWindow(disp, screenNum), 0, 0, 0, 0, globalPoint.x(), globalPoint.y());
+        XFlush(disp);
+    }
+}
+
 void
 xinput2_proc()
 {
@@ -154,6 +171,7 @@ common_motion:
                         /* Ignore duplicated events. */
                         if ((rawev->time == prev_time) && (coords[0] == prev_coords[0]) && (coords[1] == prev_coords[1]))
                             break;
+
 
                         /* SDL2 queries the device on every event, so doing that should be fine. */
                         int           i;
@@ -216,12 +234,7 @@ common_motion:
                         prev_time = rawev->time;
                         if (!mouse_capture)
                             break;
-                        XWindowAttributes winattrib {};
-                        if (XGetWindowAttributes(disp, main_window->winId(), &winattrib)) {
-                            auto globalPoint = main_window->mapToGlobal(QPoint(main_window->width() / 2, main_window->height() / 2));
-                            XWarpPointer(disp, XRootWindow(disp, XScreenNumberOfScreen(winattrib.screen)), XRootWindow(disp, XScreenNumberOfScreen(winattrib.screen)), 0, 0, 0, 0, globalPoint.x(), globalPoint.y());
-                            XFlush(disp);
-                        }
+                        warpToWindow();
 
                         break;
                     }
