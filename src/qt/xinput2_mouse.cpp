@@ -109,7 +109,7 @@ xinput2_get_xtest_pointer()
     return -1;
 }
 
-void warpToWindow() {
+void warpCursorToWindow() {
     XWindowAttributes winattrib {};
     if (XGetWindowAttributes(disp, main_window->winId(), &winattrib)) {
         auto globalPoint = main_window->mapToGlobal(QPoint(main_window->width() / 2, main_window->height() / 2));
@@ -234,7 +234,7 @@ common_motion:
                         prev_time = rawev->time;
                         if (!mouse_capture)
                             break;
-                        warpToWindow();
+                        warpCursorToWindow();
 
                         break;
                     }

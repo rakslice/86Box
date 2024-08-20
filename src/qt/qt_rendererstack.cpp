@@ -203,7 +203,7 @@ RendererStack::wheelEvent(QWheelEvent *event)
     mouse_set_z(event->pixelDelta().y());
 }
 
-void warpToWindow();
+void warpCursorToWindow();
 
 void
 RendererStack::mouseMoveEvent(QMouseEvent *event)
@@ -237,7 +237,7 @@ RendererStack::mouseMoveEvent(QMouseEvent *event)
         leaveEvent((QEvent *) event);
         ignoreNextMouseEvent--;
     }
-    warpToWindow();
+    warpCursorToWindow();
     ignoreNextMouseEvent = 2;
     oldPos               = event->pos();
 #endif
