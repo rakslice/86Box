@@ -1360,6 +1360,10 @@ x54x_in(uint16_t port, void *priv)
                     }
                     dev->Geometry++;
                     dev->Geometry &= 0x03;
+		    /* if a signature read just finished reset just in case */
+		    if (dev->Geometry == 0) {
+		        x54x_device_reset(priv);
+		    }
                 } else
                     ret = 0xff;
                 break;
